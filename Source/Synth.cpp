@@ -25,22 +25,19 @@ void Synth::reset()
 void Synth::render(float** outputBuffers, int sampleCount)
 {
     float* outputBufferLeft = outputBuffers[0];
-    float* outputBufferRight = outputBuffers[0];
+    float* outputBufferRight = outputBuffers[1];
     
-    // 1
     for (int sample = 0; sample < sampleCount; ++sample)
     {
-        // 2
         float noise = noiseGen.nextValue();
         
-        // 3
         float output = 0.0f;
+        
         if (voice.note > 0)
         {
-            output = noise * (voice.velocity / 127.0f) * 0.5f; // 4
+            output = voice.render();
         }
         
-        // 5
         outputBufferLeft[sample] = output;
         if (outputBufferRight != nullptr)
         {
@@ -54,7 +51,12 @@ void Synth::render(float** outputBuffers, int sampleCount)
 void Synth::noteOn(int note, int velocity)
 {
     voice.note = note;
-    voice.velocity = velocity;
+    
+    float freq = 440.f * std::exp2(float(note - 69)/ 12.0f);
+    
+    voice.osc.amplitude = (velocity / 127.0f) * 0.5f;
+    voice.osc.inc = freq / sampleRate;
+    voice.osc.reset();
 }
 
 void Synth::noteOff(int note)
@@ -62,7 +64,6 @@ void Synth::noteOff(int note)
     if (voice.note == note)
     {
         voice.note = 0;
-        voice.velocity = 0;
     }
 }
 

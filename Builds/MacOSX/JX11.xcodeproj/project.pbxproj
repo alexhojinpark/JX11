@@ -91,6 +91,7 @@
 		3DC4FF87F31FF148808C14D5 /* PluginEditor.cpp */ /* PluginEditor.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = PluginEditor.cpp; path = ../../Source/PluginEditor.cpp; sourceTree = SOURCE_ROOT; };
 		3FAF015A93DD17375BB0723A /* Info-AU.plist */ /* Info-AU.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Info-AU.plist"; path = "Info-AU.plist"; sourceTree = SOURCE_ROOT; };
 		3FFECC52594B5D22C7F4A3B4 /* AU */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JX11.component; sourceTree = BUILT_PRODUCTS_DIR; };
+		464226D14AA7D56DB92DA44B /* Oscillator.h */ /* Oscillator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Oscillator.h; path = ../../Source/Oscillator.h; sourceTree = SOURCE_ROOT; };
 		4AF75ECAC8B6814EB93E83CD /* juce_data_structures */ /* juce_data_structures */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_data_structures; path = /Users/ap/Dev/JUCE/modules/juce_data_structures; sourceTree = "<absolute>"; };
 		4BBC4FE3071FEC2E9044F227 /* VST3 Manifest Helper */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = juce_vst3_helper; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D282F19B2AAD8B1729FD470 /* IOKit.framework */ /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
@@ -232,6 +233,7 @@
 		01450E8A6A2E8546ABF2AEE0 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				464226D14AA7D56DB92DA44B,
 				8763E7687F2C58E8317CAEFE,
 				0AE4048E4E400B960823A104,
 				945E5A8E877E9228DAF6BB52,

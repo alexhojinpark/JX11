@@ -114,26 +114,25 @@ void JX11AudioProcessor::releaseResources()
 #ifndef JucePlugin_PreferredChannelConfigurations
 bool JX11AudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
-  #if JucePlugin_IsMidiEffect
-    juce::ignoreUnused (layouts);
-    return true;
-  #else
-    // This is the place where you check if the layout is supported.
-    // In this template code we only support mono or stereo.
-    // Some plugin hosts, such as certain GarageBand versions, will only
-    // load plugins that support stereo bus layouts.
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-     && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
-        return false;
+    #if JucePlugin_IsMidiEffect
+        juce::ignoreUnused (layouts);
+        return true;
+    #else
+        // This is the place where you check if the layout is supported.
+        // In this template code we only support mono or stereo.
+        // Some plugin hosts, such as certain GarageBand versions, will only
+        // load plugins that support stereo bus layouts.
+        if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono() && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+            return false;
 
     // This checks if the input layout matches the output layout
-   #if ! JucePlugin_IsSynth
+    #if ! JucePlugin_IsSynth
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
         return false;
-   #endif
+    #endif
 
-    return true;
-  #endif
+        return true;
+    #endif
 }
 #endif
 
@@ -188,11 +187,11 @@ void JX11AudioProcessor::splitBufferByEvents(juce::AudioBuffer<float> &buffer, j
 void JX11AudioProcessor::handleMIDI(uint8_t data0, uint8_t data1, uint8_t data2)
 {
     // Debuging with MIDI, Testing if MIDI works
-    char s[16];
-    snprintf(s, 16, "%02hhX %02hhX %02hhX", data0, data1, data2);
-    DBG(s);
+    //    char s[16];
+    //    snprintf(s, 16, "%02hhX %02hhX %02hhX", data0, data1, data2);
+    //    DBG(s);
 
-    // synth.midiMessage(data0, data1, data2);
+    synth.midiMessage(data0, data1, data2);
 }
 
 void JX11AudioProcessor::render(juce::AudioBuffer<float>& buffer, int sampleCount, int bufferOffset)
