@@ -12,7 +12,7 @@
         <BUS index="0" layout="disabled"/>
       </INPUTS>
       <OUTPUTS>
-        <BUS index="0" layout="disabled"/>
+        <BUS index="0" layout="C"/>
       </OUTPUTS>
     </LAYOUT>
   </FILTER>
@@ -31,10 +31,10 @@
       </OUTPUTS>
     </LAYOUT>
   </FILTER>
-  <FILTER uid="3" x="0.59375" y="0.7634615384615384" useARA="0">
+  <FILTER uid="3" x="0.5934504792332268" y="0.7634615384615384" useARA="0">
     <PLUGIN name="Audio Output" descriptiveName="" format="Internal" category="I/O devices"
             manufacturer="JUCE" version="1.0" file="" uniqueId="724248cb"
-            isInstrument="0" fileTime="0" infoUpdateTime="0" numInputs="0"
+            isInstrument="0" fileTime="0" infoUpdateTime="0" numInputs="1"
             numOutputs="0" isShell="0" hasARAExtension="0" uid="724248cb"/>
     <STATE>0.</STATE>
     <LAYOUT>
@@ -65,7 +65,7 @@
           uiLastY_Normal="187" uiopen_Normal="0">
     <PLUGIN name="JX11" format="VST3" category="Instrument|Synth" manufacturer="AHP"
             version="1.0.0" file="/Users/ap/Library/Audio/Plug-Ins/VST3/JX11.vst3"
-            uniqueId="f78ca2e6" isInstrument="1" fileTime="18cf243c74f" infoUpdateTime="18cf244e0fc"
+            uniqueId="f78ca2e6" isInstrument="1" fileTime="18cf67ccfdc" infoUpdateTime="18cf67dd56d"
             numInputs="0" numOutputs="2" isShell="0" hasARAExtension="0"
             uid="acf714df"/>
     <STATE>191.VMjLgXK....O+fWarAhckI2bo8la8HRLt.iHfTlai8FYo41Y8HRUTYTK3HxO9.BOVMEUy.Ea0cVZtMEcgQWY9vSRC8Vav8lak4Fc9XCLt3hKt3hKt3hKt3hYRUUSTEETIckVwTjQisVTTgkdEYjKAQjYPQSPWgUdMcjKAQjct3hdA4hKt3hKt3hKtnTUv.UQAslXuk0UXoWUFE0YQcEV77RRC8Vav8lak4Fc9vyKVMEUy.Ea0cVZtMEcgQWY9..</STATE>

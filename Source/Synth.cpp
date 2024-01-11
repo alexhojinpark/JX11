@@ -52,10 +52,10 @@ void Synth::noteOn(int note, int velocity)
 {
     voice.note = note;
     
-    float freq = 440.f * std::exp2(float(note - 69)/ 12.0f);
+    float freq = 440.0f * std::exp2(float(note - 69) / 12.0f);
     
     voice.osc.amplitude = (velocity / 127.0f) * 0.5f;
-    voice.osc.inc = freq / sampleRate;
+    voice.osc.period = sampleRate / freq;
     voice.osc.reset();
 }
 
@@ -70,22 +70,27 @@ void Synth::noteOff(int note)
 void Synth::midiMessage(uint8_t data0, uint8_t data1, uint8_t data2)
 {
     // do nothing yet
-    switch (data0 & 0xF0) {
-    // Note off
-    case 0x80:
-    noteOff(data1 & 0x7F);
-    break;
-    // Note on
-    case 0x90: {
-    uint8_t note = data1 & 0x7F;
-    uint8_t velo = data2 & 0x7F;
-    if (velo > 0) {
-    noteOn(note, velo);
-    } else {
-    noteOff(note);
-    }
-    break;
-    }
+    switch (data0 & 0xF0)
+    {
+        // Note off
+        case 0x80:
+            noteOff(data1 & 0x7F);
+        break;
+        // Note on
+        case 0x90:
+        {
+            uint8_t note = data1 & 0x7F;
+            uint8_t velo = data2 & 0x7F;
+            if (velo > 0)
+            {
+                noteOn(note, velo);
+            }
+            else
+            {
+                noteOff(note);
+            }
+        break;
+        }
     }
     
     switch (data0 & 0xF0)
@@ -100,6 +105,7 @@ void Synth::midiMessage(uint8_t data0, uint8_t data1, uint8_t data2)
         {
             uint8_t note = data1 & 0x7F;
             uint8_t velo = data2 & 0x7F;
+            
             if (velo > 0)
             {
                 noteOn(note, velo);
