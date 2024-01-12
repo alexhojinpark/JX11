@@ -121,6 +121,7 @@
 		A7AB35FD529BC2BB928F1967 /* juce_gui_extra */ /* juce_gui_extra */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_gui_extra; path = /Users/ap/Dev/JUCE/modules/juce_gui_extra; sourceTree = "<absolute>"; };
 		B4F14AAF64031038FFFB7D5E /* include_juce_audio_plugin_client_AU_1.mm */ /* include_juce_audio_plugin_client_AU_1.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_audio_plugin_client_AU_1.mm; path = ../../JuceLibraryCode/include_juce_audio_plugin_client_AU_1.mm; sourceTree = SOURCE_ROOT; };
 		B88FFED7898E8D737929E7B2 /* QuartzCore.framework */ /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		BA950EB0CEB75D19D3831A2A /* Preset.h */ /* Preset.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Preset.h; path = ../../Source/Preset.h; sourceTree = SOURCE_ROOT; };
 		BB78CB08F0A9A9BF39C458C5 /* PluginProcessor.cpp */ /* PluginProcessor.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = PluginProcessor.cpp; path = ../../Source/PluginProcessor.cpp; sourceTree = SOURCE_ROOT; };
 		BCDD918D8233ACCB0F8279EA /* JucePluginDefines.h */ /* JucePluginDefines.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = JucePluginDefines.h; path = ../../JuceLibraryCode/JucePluginDefines.h; sourceTree = SOURCE_ROOT; };
 		BD7FFCA07E7DB70C14ABCFCE /* include_juce_gui_extra.mm */ /* include_juce_gui_extra.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_gui_extra.mm; path = ../../JuceLibraryCode/include_juce_gui_extra.mm; sourceTree = SOURCE_ROOT; };
@@ -233,6 +234,7 @@
 		01450E8A6A2E8546ABF2AEE0 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				BA950EB0CEB75D19D3831A2A,
 				464226D14AA7D56DB92DA44B,
 				8763E7687F2C58E8317CAEFE,
 				0AE4048E4E400B960823A104,
