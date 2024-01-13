@@ -156,7 +156,7 @@ const juce::String JX11AudioProcessor::getProgramName (int index)
     return { presets[index].name };
 }
 
-void JX11AudioProcessor::changeProgramName (int index, const juce::String& newName)
+void JX11AudioProcessor::changeProgramName (int /*index*/, const juce::String& /*newName*/)
 {
     // not implemented
 }
@@ -171,8 +171,6 @@ void JX11AudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 
 void JX11AudioProcessor::releaseResources()
 {
-    // When playback stops, you can use this as an opportunity to free up any
-    // spare memory, etc.
     synth.deallocateResources();
 }
 
@@ -270,10 +268,14 @@ void JX11AudioProcessor::splitBufferByEvents(juce::AudioBuffer<float>& buffer, j
 
 void JX11AudioProcessor::handleMIDI(uint8_t data0, uint8_t data1, uint8_t data2)
 {
-    // Debuging with MIDI, Testing if MIDI works
-    //    char s[16];
-    //    snprintf(s, 16, "%02hhX %02hhX %02hhX", data0, data1, data2);
-    //    DBG(s);
+    // Program Change
+    if ((data0 & 0xF0) == 0xC0)
+    {
+        if (data1 < presets.size()) 
+        {
+            setCurrentProgram(data1);
+        }
+    }
 
     synth.midiMessage(data0, data1, data2);
 }
