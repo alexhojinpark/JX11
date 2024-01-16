@@ -26,25 +26,30 @@ void Synth::render(float** outputBuffers, int sampleCount)
 {
     float* outputBufferLeft = outputBuffers[0];
     float* outputBufferRight = outputBuffers[1];
-    
+
     for (int sample = 0; sample < sampleCount; ++sample)
     {
         float noise = noiseGen.nextValue() * noiseMix;
-        
+
         float output = 0.0f;
-        
-        if (voice.note > 0)
+
+        if (voice.env.isActive())
         {
-            output = voice.render() + noise;
+            output = voice.render(noise);
         }
-        
+
         outputBufferLeft[sample] = output;
         if (outputBufferRight != nullptr)
         {
             outputBufferRight[sample] = output;
         }
     }
-    
+
+    if (!voice.env.isActive())
+    {
+        voice.env.reset();
+    }
+
     protectYourEars(outputBufferLeft, sampleCount);
     protectYourEars(outputBufferRight, sampleCount);
 }
@@ -79,18 +84,25 @@ void Synth::midiMessage(uint8_t data0, uint8_t data1, uint8_t data2)
 void Synth::noteOn(int note, int velocity)
 {
     voice.note = note;
-    
+
     float freq = 440.0f * std::exp2(float(note - 69) / 12.0f);
-    
+
     voice.osc.amplitude = (velocity / 127.0f) * 0.5f;
     voice.osc.period = sampleRate / freq;
     voice.osc.reset();
+
+    Envelope& env = voice.env;
+    env.attackMultiplier = envAttack;
+    env.decayMultiplier = envDecay;
+    env.sustainLevel = envSustain;
+    env.releaseMultiplier = envRelease;
+    env.attack();
 }
 
 void Synth::noteOff(int note)
 {
     if (voice.note == note)
     {
-        voice.note = 0;
+        voice.release();
     }
 }

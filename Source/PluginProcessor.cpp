@@ -113,42 +113,44 @@ void JX11AudioProcessor::setCurrentProgram (int index)
 {
     currentProgram = index;
 
-        juce::RangedAudioParameter *params[NUM_PARAMS] = {
-            oscMixParam,
-            oscTuneParam,
-            oscFineParam,
-            glideModeParam,
-            glideRateParam,
-            glideBendParam,
-            filterFreqParam,
-            filterResoParam,
-            filterEnvParam,
-            filterLFOParam,
-            filterVelocityParam,
-            filterAttackParam,
-            filterDecayParam,
-            filterSustainParam,
-            filterReleaseParam,
-            envAttackParam,
-            envDecayParam,
-            envSustainParam,
-            envReleaseParam,
-            lfoRateParam,
-            vibratoParam,
-            noiseParam,
-            octaveParam,
-            tuningParam,
-            outputLevelParam,
-            polyModeParam,
-        };
+    juce::RangedAudioParameter *params[NUM_PARAMS] =
+    {
+        oscMixParam,
+        oscTuneParam,
+        oscFineParam,
+        glideModeParam,
+        glideRateParam,
+        glideBendParam,
+        filterFreqParam,
+        filterResoParam,
+        filterEnvParam,
+        filterLFOParam,
+        filterVelocityParam,
+        filterAttackParam,
+        filterDecayParam,
+        filterSustainParam,
+        filterReleaseParam,
+        envAttackParam,
+        envDecayParam,
+        envSustainParam,
+        envReleaseParam,
+        lfoRateParam,
+        vibratoParam,
+        noiseParam,
+        octaveParam,
+        tuningParam,
+        outputLevelParam,
+        polyModeParam,
+    };
 
-        const Preset& preset = presets[index];
+    const Preset& preset = presets[index];
 
-        for (int i = 0; i < NUM_PARAMS; ++i) {
-          params[i]->setValueNotifyingHost(params[i]->convertTo0to1(preset.param[i]));
-        }
+    for (int i = 0; i < NUM_PARAMS; ++i)
+    {
+      params[i]->setValueNotifyingHost(params[i]->convertTo0to1(preset.param[i]));
+    }
 
-        reset();
+    reset();
 }
 
 const juce::String JX11AudioProcessor::getProgramName (int index)
@@ -182,25 +184,26 @@ void JX11AudioProcessor::reset()
 #ifndef JucePlugin_PreferredChannelConfigurations
 bool JX11AudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
-    #if JucePlugin_IsMidiEffect
-        juce::ignoreUnused (layouts);
-        return true;
-    #else
-        // This is the place where you check if the layout is supported.
-        // In this template code we only support mono or stereo.
-        // Some plugin hosts, such as certain GarageBand versions, will only
-        // load plugins that support stereo bus layouts.
-        if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono() && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
-            return false;
+  #if JucePlugin_IsMidiEffect
+    juce::ignoreUnused (layouts);
+    return true;
+  #else
+    // This is the place where you check if the layout is supported.
+    // In this template code we only support mono or stereo.
+    // Some plugin hosts, such as certain GarageBand versions, will only
+    // load plugins that support stereo bus layouts.
+    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
+     && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+        return false;
 
     // This checks if the input layout matches the output layout
-    #if ! JucePlugin_IsSynth
+   #if ! JucePlugin_IsSynth
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
         return false;
-    #endif
+   #endif
 
-        return true;
-    #endif
+    return true;
+  #endif
 }
 #endif
 
@@ -227,6 +230,24 @@ void JX11AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
 
 void JX11AudioProcessor::update()
 {
+    float sampleRate = float(getSampleRate());
+    float inverseSampleRate = 1.0f / sampleRate;
+
+    synth.envAttack = std::exp(-inverseSampleRate * std::exp(5.5f - 0.075f * envAttackParam->get()));
+    synth.envDecay = std::exp(-inverseSampleRate * std::exp(5.5f - 0.075f * envDecayParam->get()));
+
+    synth.envSustain = envSustainParam->get() / 100.0f;
+
+    float envRelease = envReleaseParam->get();
+    if (envRelease < 1.0f)
+    {
+        synth.envRelease = 0.75f;  // extra fast release
+    }
+    else
+    {
+        synth.envRelease = std::exp(-inverseSampleRate * std::exp(5.5f - 0.075f * envRelease));
+    }
+
     float noiseMix = noiseParam->get() / 100.0f;
     noiseMix *= noiseMix;
     synth.noiseMix = noiseMix * 0.06f;
@@ -235,7 +256,8 @@ void JX11AudioProcessor::update()
 void JX11AudioProcessor::splitBufferByEvents(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     int bufferOffset = 0;
-    
+
+    // Loop through the MIDI messages, which are sorted by samplePosition.
     for (const auto metadata : midiMessages)
     {
         // Render the audio that happens before this event (if any).
@@ -245,8 +267,8 @@ void JX11AudioProcessor::splitBufferByEvents(juce::AudioBuffer<float>& buffer, j
             render(buffer, samplesThisSegment, bufferOffset);
             bufferOffset += samplesThisSegment;
         }
-        
-        // Handle the event, Ignore MIDI messages such as sysex
+
+        // Handle the event. Ignore MIDI messages such as sysex.
         if (metadata.numBytes <= 3)
         {
             uint8_t data1 = (metadata.numBytes >= 2) ? metadata.data[1] : 0;
@@ -254,15 +276,15 @@ void JX11AudioProcessor::splitBufferByEvents(juce::AudioBuffer<float>& buffer, j
             handleMIDI(metadata.data[0], data1, data2);
         }
     }
-    
+
     // Render the audio after the last MIDI event. If there were no
     // MIDI events at all, this renders the entire buffer.
     int samplesLastSegment = buffer.getNumSamples() - bufferOffset;
     if (samplesLastSegment > 0)
     {
-        render(buffer,samplesLastSegment, bufferOffset);
+        render(buffer, samplesLastSegment, bufferOffset);
     }
-    
+
     midiMessages.clear();
 }
 
@@ -271,7 +293,7 @@ void JX11AudioProcessor::handleMIDI(uint8_t data0, uint8_t data1, uint8_t data2)
     // Program Change
     if ((data0 & 0xF0) == 0xC0)
     {
-        if (data1 < presets.size()) 
+        if (data1 < presets.size())
         {
             setCurrentProgram(data1);
         }
@@ -313,13 +335,12 @@ void JX11AudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 void JX11AudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     std::unique_ptr<juce::XmlElement> xml(getXmlFromBinary(data, sizeInBytes));
-        if (xml.get() != nullptr && xml->hasTagName(apvts.state.getType()))
-        {
-            apvts.replaceState(juce::ValueTree::fromXml(*xml));
-            parametersChanged.store(true);
-        }
+    if (xml.get() != nullptr && xml->hasTagName(apvts.state.getType()))
+    {
+        apvts.replaceState(juce::ValueTree::fromXml(*xml));
+        parametersChanged.store(true);
+    }
 }
-
 
 //==============================================================================
 void JX11AudioProcessor::createPrograms()

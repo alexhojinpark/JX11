@@ -16,11 +16,13 @@ public:
     void midiMessage(uint8_t data0, uint8_t data1, uint8_t data2);
 
     float noiseMix;
-    
+
+    float envAttack, envDecay, envSustain, envRelease;
+
 private:
     void noteOn(int note, int velocity);
     void noteOff(int note);
-    
+
     float sampleRate;
     Voice voice;
     NoiseGenerator noiseGen;
