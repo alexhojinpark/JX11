@@ -251,6 +251,21 @@ void JX11AudioProcessor::update()
     float noiseMix = noiseParam->get() / 100.0f;
     noiseMix *= noiseMix;
     synth.noiseMix = noiseMix * 0.06f;
+    
+    synth.oscMix = oscMixParam->get() / 100.0f;
+    
+    float semi = oscTuneParam->get();
+    float cent = oscFineParam->get();
+    
+    // 3 Ways of calculation for detune
+    synth.detune = std::pow(1.059463094359f, -semi - 0.01f * cent);
+    // synth.detune = std::pow(2.0f, (-semi - 0.01f * cent) / 12.0f);
+    // synth.detune = std::exp2((-semi - 0.01f * cent) / 12.0f);
+    
+    float octave = octaveParam->get();
+    float tuning = tuningParam->get();
+    float tuneInSemi = -36.3763f - 12.0f * octave - tuning / 100.0f;
+    synth.tune = sampleRate * std::exp(0.05776226505f * tuneInSemi);
 }
 
 void JX11AudioProcessor::splitBufferByEvents(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
