@@ -1,6 +1,9 @@
 #include "Synth.h"
 #include "Utils.h"
 
+static const float ANALOG = 0.002f;
+static const int SUSTAIN = -1;
+
 Synth::Synth()
 {
     sampleRate = 44100.0f;
@@ -18,7 +21,11 @@ void Synth::deallocateResources()
 
 void Synth::reset()
 {
-    voice.reset();
+    for (int v = 0; v < MAX_VOICES; v++)
+    {
+        voices[v].reset();
+    }
+    
     noiseGen.reset();
     pitchBend = 1.0f;
 }
@@ -28,8 +35,15 @@ void Synth::render(float** outputBuffers, int sampleCount)
     float* outputBufferLeft = outputBuffers[0];
     float* outputBufferRight = outputBuffers[1];
     
-    voice.osc1.period = voice.period * pitchBend;
-    voice.osc2.period = voice.osc1.period * detune;
+    for (int v = 0; v < MAX_VOICES; ++v)
+    {
+        Voice& voice = voices[v];
+        if (voice.env.isActive())
+        {
+            voice.osc1.period = voice.period * pitchBend;
+            voice.osc2.period = voice.osc1.period * detune;
+        }
+    }
 
     for (int sample = 0; sample < sampleCount; ++sample)
     {
@@ -38,11 +52,15 @@ void Synth::render(float** outputBuffers, int sampleCount)
         float outputLeft = 0.0f;
         float outputRight = 0.0f;
         
-        if (voice.env.isActive())
+        for (int v = 0; v < MAX_VOICES; ++v)
         {
-            float output = voice.render(noise);
-            outputLeft += output * voice.panLeft;
-            outputRight += output * voice.panRight;
+            Voice& voice = voices[v];
+            if (voice.env.isActive())
+            {
+                float output = voice.render(noise);
+                outputLeft += output * voice.panLeft;
+                outputRight += output * voice.panRight;
+            }
         }
 
         if (outputBufferRight != nullptr)
@@ -55,10 +73,14 @@ void Synth::render(float** outputBuffers, int sampleCount)
             outputBufferLeft[sample] = (outputLeft + outputRight) * 0.5f;
         }
     }
-
-    if (!voice.env.isActive())
+    
+    for (int v = 0; v < MAX_VOICES; ++v)
     {
-        voice.env.reset();
+        Voice& voice = voices[v];
+        if (!voice.env.isActive())
+        {
+            voice.env.reset();
+        }
     }
 
     protectYourEars(outputBufferLeft, sampleCount);
@@ -99,12 +121,37 @@ void Synth::midiMessage(uint8_t data0, uint8_t data1, uint8_t data2)
 
 void Synth::noteOn(int note, int velocity)
 {
+    int v = 0; // index of voice to use, 0 = mono voice
+    
+    if (numVoices > 1) // check if polyphonic
+    {
+        v = findFreeVoice();
+    }
+    
+    startVoice(v, note, velocity);
+}
+
+void Synth::noteOff(int note)
+{
+    for (int v = 0; v < MAX_VOICES; v++)
+    {
+        if (voices[v].note == note)
+        {
+            voices[v].release();
+            voices[v].note = 0;
+        }
+    }
+}
+
+void Synth::startVoice(int v, int note, int velocity)
+{
+    float period = calcPeriod(v, note);
+    
+    Voice& voice = voices[v];
+    voice.period = period;
     voice.note = note;
     voice.updatePanning();
-
-    float period = calcPeriod(note);
-    voice.period = period;
-
+    
     voice.osc1.amplitude = (velocity / 127.0f) * 0.5f;
     voice.osc2.amplitude = voice.osc1.amplitude * oscMix;
 
@@ -116,21 +163,29 @@ void Synth::noteOn(int note, int velocity)
     env.attack();
 }
 
-void Synth::noteOff(int note)
+float Synth::calcPeriod(int v, int note) const
 {
-    if (voice.note == note)
-    {
-        voice.release();
-    }
-}
-
-float Synth::calcPeriod(int note) const
-{
-    float period = tune * std::exp(-0.05776226505f * float(note));
+    float period = tune * std::exp(-0.05776226505f * (float(note) + ANALOG * float(v)));
     
     while (period < 6.0f || (period * detune) < 6.0f)
     {
         period += period;
     }
     return period;
+}
+
+int Synth::findFreeVoice() const
+{
+    int v = 0;
+    float l = 100.0f; // lound evelope
+    
+    for (int i = 0; i < MAX_VOICES; ++i)
+    {
+        if (voices[i].env.level < l && !voices[i].env.isInAttack())
+        {
+            l = voices[i].env.level;
+            v = i;
+        }
+    }
+    return v;
 }

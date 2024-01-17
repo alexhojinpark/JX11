@@ -14,6 +14,7 @@ public:
     void reset();
     void render(float** outputBuffers, int sampleCount);
     void midiMessage(uint8_t data0, uint8_t data1, uint8_t data2);
+    
 
     float noiseMix;
         
@@ -22,15 +23,29 @@ public:
     float oscMix;
     float detune;
     float tune;
+    
+    static constexpr int MAX_VOICES = 8;
+    int numVoices;
 
 private:
+    void controlChange(uint8_t data1, uint8_t data2);
+
     void noteOn(int note, int velocity);
     void noteOff(int note);
-    float calcPeriod(int note) const;
     
+    void startVoice(int v, int note, int velocity);
+    void restartMonoVoice(int note, int velocity);
+
+    float calcPeriod(int v, int note) const;
+    int findFreeVoice() const;
+    
+    void shiftQueuedNotes();
+    int nextQueuedNote();
+
     float sampleRate;
-    Voice voice;
+    std::array<Voice, MAX_VOICES> voices;
     NoiseGenerator noiseGen;
     
     float pitchBend;
+    bool sustainPedalPressed;
 };
