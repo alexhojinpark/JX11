@@ -37,6 +37,8 @@ public:
     float lfoInc;
     
     float vibrato;
+    
+    float pwmDepth;
 
 private:
     void controlChange(uint8_t data1, uint8_t data2);
@@ -64,4 +66,6 @@ private:
     
     int lfoStep;
     float lfo;
+    
+    float modWheel;
 };

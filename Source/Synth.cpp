@@ -31,6 +31,8 @@ void Synth::reset()
     sustainPedalPressed = false;
     
     outputLevelSmoother.reset(sampleRate, 0.05);
+    
+    modWheel = 0.0f;
 }
 
 void Synth::render(float** outputBuffers, int sampleCount)
@@ -137,6 +139,10 @@ void Synth::controlChange(uint8_t data1, uint8_t data2)
 {
     switch (data1)
     {
+        // Mod wheel
+        case 0x01:
+            modWheel = 0.000005f * float(data2 * data2);
+            break;
             
         // Sustain pedal
         case 0x40:
@@ -230,6 +236,11 @@ void Synth::startVoice(int v, int note, int velocity)
     voice.osc1.amplitude = volumeTrim * vel;
     voice.osc2.amplitude = voice.osc1.amplitude * oscMix;
 
+    if (vibrato == 0.0f && pwmDepth > 0.0f)
+    {
+        voice.osc2.squareWave(voice.osc1, voice.period);
+    }
+    
     Envelope& env = voice.env;
     env.attackMultiplier = envAttack;
     env.decayMultiplier = envDecay;
@@ -321,7 +332,8 @@ void Synth::updateLFO()
         
         const float sine = std::sin(lfo);
         
-        float vibratoMod = 1.0f + sine * vibrato;
+        float vibratoMod = 1.0f + sine * (modWheel + vibrato);
+        float pwm = 1.0f + sine * (modWheel + pwmDepth);
         
         for (int v = 0; v < MAX_VOICES; ++v)
         {
@@ -329,7 +341,7 @@ void Synth::updateLFO()
             if (voice.env.isActive())
             {
                 voice.osc1.modulation = vibratoMod;
-                voice.osc2.modulation = vibratoMod;
+                voice.osc2.modulation = pwm;
             }
         }
     }

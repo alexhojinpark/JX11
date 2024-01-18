@@ -293,6 +293,10 @@ void JX11AudioProcessor::update()
     
     float vibrato = vibratoParam->get() / 200.0f;
     synth.vibrato = 0.2f * vibrato * vibrato;
+    if (vibrato < 0.0f)
+    {
+        synth.vibrato = 0.0f;
+    }
 }
 
 void JX11AudioProcessor::splitBufferByEvents(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
