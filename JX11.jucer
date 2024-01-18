@@ -7,8 +7,8 @@
   <MAINGROUP id="dbNcWG" name="JX11">
     <GROUP id="{13EB0C66-C289-C113-CD6E-17D477A98E5C}" name="Source">
       <FILE id="kapERA" name="Envelope.h" compile="0" resource="0" file="Source/Envelope.h"/>
-      <FILE id="sakhMX" name="Preset.h" compile="0" resource="0" file="Source/Preset.h"/>
       <FILE id="RSaAmR" name="Oscillator.h" compile="0" resource="0" file="Source/Oscillator.h"/>
+      <FILE id="sakhMX" name="Preset.h" compile="0" resource="0" file="Source/Preset.h"/>
       <FILE id="LO70Fq" name="Utils.h" compile="0" resource="0" file="Source/Utils.h"/>
       <FILE id="t4gnjg" name="NoiseGenerator.h" compile="0" resource="0"
             file="Source/NoiseGenerator.h"/>
