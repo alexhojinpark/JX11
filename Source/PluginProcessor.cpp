@@ -291,6 +291,20 @@ void JX11AudioProcessor::update()
     float lfoRate = std::exp(7.0f * lfoRateParam->get() - 4.0f);
     synth.lfoInc = lfoRate * inverseUpdateRate * float(TWO_PI);
     
+    synth.glideMode = glideModeParam->getIndex();
+    
+    float glideRate = glideRateParam->get();
+    if (glideRate < 2.0f)
+    {
+        synth.glideRate = 1.0f; // no glide
+    }
+    else
+    {
+        synth.glideRate = 1.0f - std::exp(-inverseUpdateRate * std::exp(6.0f - 0.07f * glideRate));
+    }
+    
+    synth.glideBend = glideBendParam->get();
+    
     float vibrato = vibratoParam->get() / 200.0f;
     synth.vibrato = 0.2f * vibrato * vibrato;
     if (vibrato < 0.0f)
@@ -336,6 +350,17 @@ void JX11AudioProcessor::splitBufferByEvents(juce::AudioBuffer<float>& buffer, j
 
 void JX11AudioProcessor::handleMIDI(uint8_t data0, uint8_t data1, uint8_t data2)
 {
+    if ((data0 & 0xF0) == 0xB0)
+    {
+        if (data1 == 0x07) // volume
+        {
+            float volumeCtl = float(data2) / 127.0f;
+            outputLevelParam->beginChangeGesture();
+            outputLevelParam->setValueNotifyingHost(volumeCtl);
+            outputLevelParam->endChangeGesture();
+        }
+    }
+    
     // Program Change
     if ((data0 & 0xF0) == 0xC0)
     {

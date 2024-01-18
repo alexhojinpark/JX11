@@ -45,8 +45,8 @@ void Synth::render(float** outputBuffers, int sampleCount)
         Voice& voice = voices[v];
         if (voice.env.isActive())
         {
-            voice.osc1.period = voice.period * pitchBend;
-            voice.osc2.period = voice.osc1.period * detune;
+            updatePeriod(voice);
+            voice.glideRate = glideRate;
         }
     }
 
@@ -96,6 +96,38 @@ void Synth::render(float** outputBuffers, int sampleCount)
 
     protectYourEars(outputBufferLeft, sampleCount);
     protectYourEars(outputBufferRight, sampleCount);
+}
+
+void Synth::updateLFO()
+{
+    if (--lfoStep <= 0)
+    {
+        lfoStep = LFO_MAX;
+        
+        lfo += lfoInc;
+        if (lfo > PI)
+        {
+            lfo -= TWO_PI;
+        }
+        
+        const float sine = std::sin(lfo);
+        
+        float vibratoMod = 1.0f + sine * (modWheel + vibrato);
+        float pwm = 1.0f + sine * (modWheel + pwmDepth);
+        
+        for (int v = 0; v < MAX_VOICES; ++v)
+        {
+            Voice& voice = voices[v];
+            if (voice.env.isActive())
+            {
+                voice.osc1.modulation = vibratoMod;
+                voice.osc2.modulation = pwm;
+                
+                voice.updateLFO();
+                updatePeriod(voice);
+            }
+        }
+    }
 }
 
 void Synth::midiMessage(uint8_t data0, uint8_t data1, uint8_t data2)
@@ -227,8 +259,25 @@ void Synth::startVoice(int v, int note, int velocity)
     float period = calcPeriod(v, note);
     
     Voice& voice = voices[v];
-    voice.period = period;
+    voice.target = period;
     
+    int noteDistance = 0;
+    if (lastNote > 0)
+    {
+        if ((glideMode == 2) || ((glideMode == 1) && isPlayingLegatoStyle()))
+        {
+            noteDistance = note - lastNote;
+        }
+    }
+    
+    voice.period = period * std::pow(1.059463094359f, float(noteDistance) - glideBend);
+    
+    if (voice.period < 6.0f)
+    {
+        voice.period = 6.0f;
+    }
+    
+    lastNote = note;
     voice.note = note;
     voice.updatePanning();
     
@@ -281,7 +330,12 @@ void Synth::restartMonoVoice(int note, int velocity)
     float period = calcPeriod(0, note);
     
     Voice& voice = voices[0];
-    voice.period = period;
+    voice.target = period;
+    
+    if (glideMode == 0)
+    {
+        voice.period = period;
+    }
     
     voice.env.level += SILENCE + SILENCE;
     voice.note = note;
@@ -318,31 +372,15 @@ int Synth::nextQueuedNote()
     return 0;
 }
 
-void Synth::updateLFO()
+bool Synth::isPlayingLegatoStyle() const
 {
-    if (--lfoStep <= 0)
+    int held = 0;
+    for (int i = 0; i < MAX_VOICES; ++i)
     {
-        lfoStep = LFO_MAX;
-        
-        lfo += lfoInc;
-        if (lfo > PI)
+        if (voices[i].note > 0)
         {
-            lfo -= TWO_PI;
-        }
-        
-        const float sine = std::sin(lfo);
-        
-        float vibratoMod = 1.0f + sine * (modWheel + vibrato);
-        float pwm = 1.0f + sine * (modWheel + pwmDepth);
-        
-        for (int v = 0; v < MAX_VOICES; ++v)
-        {
-            Voice& voice = voices[v];
-            if (voice.env.isActive())
-            {
-                voice.osc1.modulation = vibratoMod;
-                voice.osc2.modulation = pwm;
-            }
+            held += 1;
         }
     }
+    return held;
 }
