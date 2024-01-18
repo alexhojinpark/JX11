@@ -32,6 +32,11 @@ public:
     
     float velocitySensitivity;
     bool ignoreVelocity;
+    
+    const int LFO_MAX = 32;
+    float lfoInc;
+    
+    float vibrato;
 
 private:
     void controlChange(uint8_t data1, uint8_t data2);
@@ -54,4 +59,9 @@ private:
     
     float pitchBend;
     bool sustainPedalPressed;
+    
+    void updateLFO();
+    
+    int lfoStep;
+    float lfo;
 };
