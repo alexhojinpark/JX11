@@ -75,6 +75,7 @@
 		0AE4048E4E400B960823A104 /* NoiseGenerator.h */ /* NoiseGenerator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = NoiseGenerator.h; path = ../../Source/NoiseGenerator.h; sourceTree = SOURCE_ROOT; };
 		0BDA91E46ABD15C91CE96B50 /* juce_audio_plugin_client */ /* juce_audio_plugin_client */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_audio_plugin_client; path = /Users/ap/Dev/JUCE/modules/juce_audio_plugin_client; sourceTree = "<absolute>"; };
 		0CC9298D79CDF4B359176364 /* Info-VST3.plist */ /* Info-VST3.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Info-VST3.plist"; path = "Info-VST3.plist"; sourceTree = SOURCE_ROOT; };
+		0E810755A3293D8AA2D1C145 /* Filter.h */ /* Filter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Filter.h; path = ../../Source/Filter.h; sourceTree = SOURCE_ROOT; };
 		113439EF3BC4139A16D78CB5 /* CoreMIDI.framework */ /* CoreMIDI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMIDI.framework; path = System/Library/Frameworks/CoreMIDI.framework; sourceTree = SDKROOT; };
 		11361723D620B04F7EC37767 /* AudioToolbox.framework */ /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		1B6F6F6722FBBBE8377E19E0 /* PluginProcessor.h */ /* PluginProcessor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PluginProcessor.h; path = ../../Source/PluginProcessor.h; sourceTree = SOURCE_ROOT; };
@@ -235,6 +236,7 @@
 		01450E8A6A2E8546ABF2AEE0 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				0E810755A3293D8AA2D1C145,
 				4B8BEC26A1EFD850427B8D5D,
 				464226D14AA7D56DB92DA44B,
 				BA950EB0CEB75D19D3831A2A,

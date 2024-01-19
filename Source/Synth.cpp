@@ -12,6 +12,11 @@ Synth::Synth()
 void Synth::allocateResources(double sampleRate_, int /*samplesPerBlock*/)
 {
     sampleRate = static_cast<float>(sampleRate_);
+    
+    for (int v = 0; v < MAX_VOICES; ++v)
+    {
+        voices[v].filter.sampleRate = sampleRate;
+    }
 }
 
 void Synth::deallocateResources()
@@ -33,6 +38,14 @@ void Synth::reset()
     outputLevelSmoother.reset(sampleRate, 0.05);
     
     modWheel = 0.0f;
+    
+    resonanceCtl = 1.0f;
+    
+    pressure = 0.0f;
+    
+    filterCtl = 0.0f;
+    
+    filterZip = 0.0f;
 }
 
 void Synth::render(float** outputBuffers, int sampleCount)
@@ -47,6 +60,9 @@ void Synth::render(float** outputBuffers, int sampleCount)
         {
             updatePeriod(voice);
             voice.glideRate = glideRate;
+            voice.filterQ = filterQ * resonanceCtl;
+            voice.pitchBend = pitchBend;
+            voice.filterEnvDepth = filterEnvDepth;
         }
     }
 
@@ -91,6 +107,7 @@ void Synth::render(float** outputBuffers, int sampleCount)
         if (!voice.env.isActive())
         {
             voice.env.reset();
+            voice.filter.reset();
         }
     }
 
@@ -115,6 +132,9 @@ void Synth::updateLFO()
         float vibratoMod = 1.0f + sine * (modWheel + vibrato);
         float pwm = 1.0f + sine * (modWheel + pwmDepth);
         
+        float filterMod = filterKeyTracking + filterCtl + (filterLFODepth + pressure) * sine;
+        filterZip += 0.005f * (filterMod - filterZip);
+        
         for (int v = 0; v < MAX_VOICES; ++v)
         {
             Voice& voice = voices[v];
@@ -122,7 +142,7 @@ void Synth::updateLFO()
             {
                 voice.osc1.modulation = vibratoMod;
                 voice.osc2.modulation = pwm;
-                
+                voice.filterMod = filterZip;
                 voice.updateLFO();
                 updatePeriod(voice);
             }
@@ -155,14 +175,19 @@ void Synth::midiMessage(uint8_t data0, uint8_t data1, uint8_t data2)
             break;
         }
         
-        // Pitch bend
-        case 0xE0:
-            pitchBend = std::exp(-0.000014102f * float(data1 + 128 * data2 - 8192));
-            break;
-        
         // Control change
         case 0xB0:
             controlChange(data1, data2);
+            break;
+            
+        // Channel aftertouch
+        case 0xD0:
+            pressure = 0.0001f * float(data1 * data1);
+            break;
+            
+        // Pitch bend
+        case 0xE0:
+            pitchBend = std::exp(-0.000014102f * float(data1 + 128 * data2 - 8192));
             break;
     }
 }
@@ -184,6 +209,21 @@ void Synth::controlChange(uint8_t data1, uint8_t data2)
             {
                 noteOff(SUSTAIN);
             }
+            break;
+            
+        // Resonance
+        case 0x41:
+            resonanceCtl = 154.0f / float(154 - data2);
+            break;
+            
+        // Filter +
+        case 0x4A:
+            filterCtl = 0.02f * float(data2);
+            break;
+            
+        // Filter -
+        case 0x4B:
+            filterCtl = -0.03f * float(data2);
             break;
             
         // All notes off
@@ -281,6 +321,9 @@ void Synth::startVoice(int v, int note, int velocity)
     voice.note = note;
     voice.updatePanning();
     
+    voice.cutoff = sampleRate / (period * PI);
+    voice.cutoff *= std::exp(velocitySensitivity * float(velocity - 64));
+    
     float vel = 0.004f * float((velocity + 64) * (velocity + 64)) - 8.0f;
     voice.osc1.amplitude = volumeTrim * vel;
     voice.osc2.amplitude = voice.osc1.amplitude * oscMix;
@@ -289,13 +332,42 @@ void Synth::startVoice(int v, int note, int velocity)
     {
         voice.osc2.squareWave(voice.osc1, voice.period);
     }
-    
     Envelope& env = voice.env;
     env.attackMultiplier = envAttack;
     env.decayMultiplier = envDecay;
     env.sustainLevel = envSustain;
     env.releaseMultiplier = envRelease;
     env.attack();
+
+    Envelope& filterEnv = voice.filterEnv;
+    filterEnv.attackMultiplier = filterAttack;
+    filterEnv.decayMultiplier = filterDecay;
+    filterEnv.sustainLevel = filterSustain;
+    filterEnv.releaseMultiplier = filterRelease;
+    filterEnv.attack();
+}
+
+void Synth::restartMonoVoice(int note, int velocity)
+{
+    float period = calcPeriod(0, note);
+    
+    Voice& voice = voices[0];
+    voice.target = period;
+    
+    if (glideMode == 0)
+    {
+        voice.period = period;
+    }
+    
+    voice.cutoff = sampleRate / (period * PI);
+    if (velocity > 0)
+    {
+        voice.cutoff *= std::exp(velocitySensitivity * float(velocity - 64));
+    }
+    
+    voice.env.level += SILENCE + SILENCE;
+    voice.note = note;
+    voice.updatePanning();
 }
 
 float Synth::calcPeriod(int v, int note) const
@@ -323,23 +395,6 @@ int Synth::findFreeVoice() const
         }
     }
     return v;
-}
-
-void Synth::restartMonoVoice(int note, int velocity)
-{
-    float period = calcPeriod(0, note);
-    
-    Voice& voice = voices[0];
-    voice.target = period;
-    
-    if (glideMode == 0)
-    {
-        voice.period = period;
-    }
-    
-    voice.env.level += SILENCE + SILENCE;
-    voice.note = note;
-    voice.updatePanning();
 }
 
 void Synth::shiftQueuedNotes()
