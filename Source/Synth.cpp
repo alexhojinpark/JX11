@@ -13,9 +13,19 @@ void Synth::allocateResources(double sampleRate_, int /*samplesPerBlock*/)
 {
     sampleRate = static_cast<float>(sampleRate_);
     
+    // For JUCE LadderFilter
+    // juce::dsp::ProcessSpec spec;
+    // spec.sampleRate = sampleRate;
+    // spec.maximumBlockSize = samplesPerBlock;
+    // spec.numChannels = 1;
+    
     for (int v = 0; v < MAX_VOICES; ++v)
     {
         voices[v].filter.sampleRate = sampleRate;
+        
+        // For JUCE LadderFilter
+        // voices[v].filter.setMode(juce::dsp::LadderFilterMode::LPF12);
+        // voices[v].filter.prepare(spec);
     }
 }
 
