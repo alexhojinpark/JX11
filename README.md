@@ -6,7 +6,7 @@ Referred to the book **Creating Synthesizer Plug-Ins with C++ and JUCE**. The fo
 ## Features
 
 - **Oscillators:** The core of the synthesizer, capable of generating basic waveforms with customable Tune, Fine, and Mix.
-- **Glide:** Also known as portamento, this feature allows for a smooth pitch transition between notes, adding expressiveness to the performance.
+- **Glide:** Allows for a smooth pitch transition between notes with adjustable glide rate and blend options.
 - **Filters:** Includes Filter Freq, Reso, Env, LFO, Velocity, Attack, Decay, Sustain, and Release.
 - **ADSR Envelopes:** Attack, Decay, Sustain, and Release envelopes provide dynamic control over the amplitude and filter cutoff, allowing for shaping the sound's temporal characteristics.
 - **Polyphony & Voice Management:** Supports multiple simultaneous notes, enabling complex chords and textures. The voice management system efficiently allocates and deallocates voices as needed.
